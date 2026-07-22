@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DHL Express - Suivi COD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #e8ecf1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        }
+
+        /* ===== DHL HEADER ===== */
+        .dhl-band {
+            background: #ffcc00;
+            width: 100%;
+            padding: 10px 0;
+            text-align: center;
+            border-bottom: 4px solid #d40511;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .dhl-band img {
+            height: 36px;
+        }
+
+        .wrapper {
+            width: 100%;
+            max-width: 520px;
+            padding: 24px 16px;
+            flex: 1;
+        }
+
+        /* ===== SEARCH CARD ===== */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            padding: 28px 24px;
+            border: 1px solid #eef1f5;
+        }
+        .card h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0b1d2e;
+            margin-bottom: 2px;
+        }
+        .card .sub {
+            font-size: 0.8rem;
+            color: #6f7d95;
+            margin-bottom: 16px;
+        }
+        .card .badge {
+            background: #fef3e0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            color: #8a6a00;
+            margin-bottom: 18px;
+            border-left: 3px solid #ffcc00;
+        }
+        .search-line {
+            display: flex;
+            gap: 10px;
+        }
+        .search-line input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e7ed;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            letter-spacing: 0.8px;
+            font-family: inherit;
+            background: #f8fafc;
+            transition: 0.2s;
+        }
+        .search-line input:focus {
+            border-color: #ffcc00;
+            outline: none;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(255,204,0,0.15);
+        }
+        .search-line button {
+            background: #d40511;
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.15s;
+        }
+        .search-line button:hover {
+            background: #b0040e;
+        }
+        .error-box {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #f9b4b4;
+            border-left: 4px solid #d40511;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #b91c1c;
+            margin-top: 14px;
+        }
+
+        /* ================================================================
+           RICEVUTA DHL — TOUTE JAUNE (AUTHENTIQUE)
+           ================================================================ */
+        .ricevuta-wrap {
+            display: none;
+            margin-top: 28px;
+            animation: fadeSlide 0.4s ease;
+        }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ricevuta {
+            background: #ffcc00;
+            border-radius: 6px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            border: 2px solid #d40511;
+            overflow: hidden;
+            font-size: 0.78rem;
+            color: #1a1a1a;
+        }
+
+        /* --- EN-TÊTE ROUGE DHL --- */
+        .r-header {
+            background: #d40511;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #a0040e;
+        }
+        .r-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .r-header-left img {
+            height: 28px;
+            filter: brightness(0) invert(1);
+        }
+        .r-header-left .r-h-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+        }
+        .r-header-left .r-h-title small {
+            font-weight: 400;
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.75);
+            display: block;
+        }
+        .r-header-right {
+            text-align: right;
+        }
+        .r-header-right .cod-stamp {
+            background: #ffcc00;
+            color: #1a1a1a;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- CORPS JAUNE --- */
+        .r-body {
+            padding: 18px 20px;
+            background: #ffcc00;
+        }
+
+        /* Reference */
+        .r-ref {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.5);
+            padding: 8px 14px;
+            border-radius: 4px;
+            margin-bottom: 14px;
+            border-left: 4px solid #d40511;
+        }
+        .r-ref .r-ref-lbl {
+            font-size: 0.6rem;
+            color: #5a4a00;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-weight: 600;
+        }
+        .r-ref .r-ref-val {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #d40511;
+            letter-spacing: 0.3px;
+        }
+
+        /* Status stripe */
+        .r-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 4px;
+            border-left: 4px solid #2e7d32;
+            margin-bottom: 14px;
+            font-size: 0.75rem;
+            color: #1b5e20;
+            font-weight: 600;
+        }
+
+        /* Grid 2 colonnes */
+        .r-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .r-section {
+            background: rgba(255,255,255,0.4);
+            border-radius: 5px;
+            padding: 10px 12px;
+            border: 1px solid rgba(212,5,17,0.15);
+        }
+        .r-section-title {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #d40511;
+            margin-bottom: 6px;
+            padding-bottom: 3px;
+            border-bottom: 2px solid #d40511;
+        }
+        .r-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px dotted rgba(0,0,0,0.08);
+        }
+        .r-row:last-child {
+            border-bottom: none;
+        }
+        .r-row .r-lbl {
+            color: #5a4a00;
+            font-size: 0.65rem;
+            width: 40%;
+            font-weight: 500;
+        }
+        .r-row .r-val {
+            color: #1a1a1a;
+            font-size: 0.7rem;
+            font-weight: 600;
+            width: 60%;
+            text-align: right;
+        }
+        .r-row .r-val.accent {
+            color: #d40511;
+        }
+        .r-row .r-val.green {
+            color: #2e7d32;
+        }
+
+        /* --- COD BOX (ROUGE DHL) --- */
+        .r-cod {
+            background: #d40511;
+            padding: 14px 20px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            border: 2px solid #a0040e;
+        }
+        .r-cod-left .cod-lbl {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.9);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            font-weight: 600;
+        }
+        .r-cod-left .cod-sub {
+            font-size: 0.55rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 1px;
+        }
+        .r-cod .cod-price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        /* Payment info bar */
+        .r-pay {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 0.62rem;
+            color: #5a4a00;
+            border: 1px solid rgba(212,5,17,0.1);
+        }
+        .r-pay strong {
+            color: #1a1a1a;
+        }
+
+        /* Note */
+        .r-note {
+            font-size: 0.58rem;
+            color: #5a4a00;
+            text-align: center;
+            padding: 4px 0 2px;
+            font-weight: 500;
+        }
+
+        /* --- FOOTER JAUNE --- */
+        .r-footer {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.3);
+            border-top: 2px solid #d40511;
+        }
+        .r-footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .r-footer-item {
+            font-size: 0.6rem;
+            color: #5a4a00;
+            font-weight: 500;
+        }
+        .r-footer-item strong {
+            color: #1a1a1a;
+            display: block;
+            font-size: 0.65rem;
+        }
+        .r-barcode {
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.3rem;
+            letter-spacing: 3px;
+            color: #1a1a1a;
+            text-align: center;
+            padding: 6px 0;
+            border-top: 1px dashed rgba(0,0,0,0.15);
+            word-break: break-all;
+        }
+
+        /* --- ACTIONS --- */
+        .r-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .r-actions button {
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-family: inherit;
+            transition: 0.15s;
+        }
+        .r-actions .r-print {
+            background: #d40511;
+            border: none;
+            color: #fff;
+            border: 2px solid #a0040e;
+        }
+        .r-actions .r-print:hover {
+            background: #b0040e;
+        }
+        .r-actions .r-back {
+            background: rgba(255,255,255,0.5);
+            border: 2px solid #d40511;
+            color: #1a1a1a;
+        }
+        .r-actions .r-back:hover {
+            background: rgba(255,255,255,0.8);
+        }
+
+        .footer-legal {
+            font-size: 0.6rem;
+            color: #a0b0c4;
+            text-align: center;
+            margin-top: 16px;
+            padding: 8px;
+        }
+
+        @media print {
+            .dhl-band, .card, .r-actions, .footer-legal { display: none !important; }
+            .ricevuta-wrap { display: block !important; }
+            .ricevuta { box-shadow: none; }
+        }
+
+        @media (max-width: 480px) {
+            .r-grid { grid-template-columns: 1fr; }
+            .r-header { flex-direction: column; text-align: center; gap: 6px; }
+            .r-header-right { text-align: center; }
+            .r-cod { flex-direction: column; text-align: center; gap: 4px; }
+            .r-footer-grid { grid-template-columns: 1fr; }
+            .search-line { flex-direction: column; }
+            .wrapper { padding: 16px 12px; }
+            .card { padding: 20px 16px; }
+            .r-body { padding: 14px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- DHL TOP BAND -->
+    <div class="dhl-band">
+        <img src="https://www.dhl.com/content/dam/dhl/global/core/images/logos/dhl-logo.svg" alt="DHL">
+    </div>
+
+    <div class="wrapper">
+
+        <!-- SEARCH CARD -->
+        <div class="card" id="searchCard">
+            <h2>Suivi de colis COD</h2>
+            <p class="sub">Entrez votre numéro de suivi DHL pour consulter votre reçu</p>
+            <div class="badge">🔒 Service DHL — Paiement à la livraison (COD)</div>
+            <form id="searchForm">
+                <div class="search-line">
+                    <input type="text" id="trackingInput" placeholder="Ex: JD1234567890" autocomplete="off">
+                    <button type="submit">Rechercher</button>
+                </div>
+            </form>
+            <div class="error-box" id="errorMsg">
+                ❌ Numéro de suivi introuvable. Veuillez vérifier et réessayer.
+            </div>
+        </div>
+
+        <!-- ===== RICEVUTA DHL — JAUNE AUTHENTIQUE ===== -->
+        <div class="ricevuta-wrap" id="ricevutaWrap">
+            <div class="ricevuta" id="ricevuta">
+
+                <!-- HEADER ROUGE (contraste) -->
+                <div class="r-header">
+                    <div class="r-header-left">
+                        <img src="https://www.dhl.com/content/dam/dhl/global/core/images/logos/dhl-logo.svg" alt="DHL">
+                        <div class="r-h-title">
+                            BON DE LIVRAISON · REÇU COD
+                            <small>DHL Express — officiel</small>
+                        </div>
+                    </div>
+                    <div class="r-header-right">
+                        <span class="cod-stamp">PAIEMENT À LA LIVRAISON</span>
+                    </div>
+                </div>
+
+                <div class="r-body">
+
+                    <!-- REF -->
+                    <div class="r-ref">
+                        <span class="r-ref-lbl">Référence DHL</span>
+                        <span class="r-ref-val" id="refNumber">DHL-COD-2026-XXXXXXXX</span>
+                    </div>
+
+                    <!-- STATUS -->
+                    <div class="r-status">
+                        <span>✅</span>
+                        <span id="statusText">En cours de livraison — Préparez le montant COD</span>
+                    </div>
+
+                    <!-- 2-COLUMN GRID -->
+                    <div class="r-grid">
+
+                        <!-- LEFT: Tracking -->
+                        <div class="r-section">
+                            <div class="r-section-title">🚚 Suivi</div>
+                            <div class="r-row">
+                                <span class="r-lbl">N° de suivi</span>
+                                <span class="r-val accent" id="rTracking">—</span>
+                            </div>
+                            <div class="r-row">
+                                <span class="r-lbl">Date</span>
+                                <span class="r-val" id="rDate">—</span>
+                            </div>
+                            <div class="r-row">
+                                <span class="r-lbl">Service</span>
+                                <span class="r-val">DHL Express COD</span>
+                            </div>
+                            <div class="r-row">
+                                <span class="r-lbl">Statut</span>
+                                <span class="r-val green" id="rStatut">En cours</span>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT: Destinataire -->
+                        <div class="r-section">
+                            <div class="r-section-title">👤 Destinataire</div>
+                            <div class="r-row">
+                                <span class="r-lbl">Nom</span>
+                                <span class="r-val" id="rNom">—</span>
+                            </div>
+                            <div class="r-row">
+                                <span class="r-lbl">Adresse</span>
+                                <span class="r-val" id="rAdresse">—</span>
+                            </div>
+                            <div class="r-row">
+                                <span class="r-lbl">Téléphone</span>
+                                <span class="r-val" id="rTel">—</span>
+                            </div>
+                            <div class="r-row">
+                                <span class="r-lbl">Ville</span>
+                                <span class="r-val" id="rVille">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COD BOX (ROUGE) -->
+                    <div class="r-cod">
+                        <div class="r-cod-left">
+                            <div class="cod-lbl">💰 Montant COD à payer</div>
+                            <div class="cod-sub">Paiement à la livraison · Espèces / Carte</div>
+                        </div>
+                        <div class="cod-price" id="rCOD">0,00 €</div>
+                    </div>
+
+                    <!-- PAYMENT INFO -->
+                    <div class="r-pay">
+                        <span><strong>Méthode :</strong> Espèces à la livraison</span>
+                        <span><strong>Échéance :</strong> À réception</span>
+                    </div>
+
+                    <div class="r-note">
+                        Ce document sert de preuve d'envoi et de réception. Conservez-le pour toute réclamation.
+                    </div>
+                </div>
+
+                <!-- FOOTER -->
+                <div class="r-footer">
+                    <div class="r-footer-grid">
+                        <div class="r-footer-item">
+                            <strong>DHL</strong>
+                            Service Client: 05 22 45 67 89
+                        </div>
+                        <div class="r-footer-item">
+                            <strong>Contact</strong>
+                            support@dhl.co.ma · dhl.com/ma
+                        </div>
+                    </div>
+                    <div class="r-barcode">| || |  || | ||| | || ||| || || | ||</div>
+                    <div class="r-actions">
+                        <button class="r-print">🖨️ Imprimer</button>
+                        <button class="r-back" onclick="backToSearch()">⬅️ Nouvelle recherche</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="footer-legal">© 2026 DHL International GmbH. All rights reserved.</div>
+    </div>
+
+    <script>
+        // === DONNÉES ===
+        var trackingData = {
+            "JDCRI0VRT778": {
+                nom:       "Angelo Merenda",
+                adresse:   "via chienna 23 forio di Ischia 80075",
+                telephone: "+‪39 353 206 0057‬",
+                ville:     "Ischia",
+                montant:   "10,00 €"
+            },
+            "JDNANCY6367E": {
+                nom:       "Nancy Zerlenga",
+                adresse:   "Via nuova San Rocco, 54, 80131",
+                telephone: "‪+39 331 270 7509‬",
+                ville:     "Napoli",
+                montant:   "25,00 €"
+            },
+            "JDAUTEIRO63G": {
+                nom:       "Autiero guido",
+                adresse:   "Via Gabriele Rossetti 34 bis Fuorigrotta 80125 ",
+                telephone: "‪+39 334 588 9813‬",
+                ville:     "Fuorigrotta",
+                montant:   "200,00 €"
+            }
+        };
+
+        var monthsFR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
+        function generateRef() {
+            return 'DHL-COD-2026-' + String(Math.random()).slice(2,10);
+        }
+
+        function generateDate() {
+            var d = new Date();
+            return String(d.getDate()).padStart(2,'0') + ' ' + monthsFR[d.getMonth()] + ' ' + d.getFullYear();
+        }
+
+        // === FORM SUBMIT ===
+        document.getElementById('searchForm').onsubmit = function(e) {
+            e.preventDefault();
+            var tracking = document.getElementById('trackingInput').value.trim().toUpperCase();
+            var errorMsg = document.getElementById('errorMsg');
+            var wrap = document.getElementById('ricevutaWrap');
+
+            errorMsg.style.display = 'none';
+            wrap.style.display = 'none';
+
+            if (tracking.length < 4) {
+                errorMsg.textContent = '❌ Veuillez entrer un numéro de suivi valide (minimum 4 caractères).';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            var data = trackingData[tracking];
+            if (!data) {
+                errorMsg.textContent = '❌ Le numéro "' + tracking + '" est introuvable. Vérifiez et réessayez.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            // Remplir la ricevuta
+            document.getElementById('refNumber').textContent = generateRef();
+            document.getElementById('rTracking').textContent = tracking;
+            document.getElementById('rDate').textContent = generateDate();
+            document.getElementById('rStatut').textContent = 'En cours';
+            document.getElementById('statusText').textContent = 'En cours de livraison — Préparez le montant COD';
+            document.getElementById('rNom').textContent = data.nom;
+            document.getElementById('rAdresse').textContent = data.adresse;
+            document.getElementById('rTel').textContent = data.telephone;
+            document.getElementById('rVille').textContent = data.ville;
+            document.getElementById('rCOD').textContent = data.montant;
+
+            wrap.style.display = 'block';
+            wrap.scrollIntoView({ behavior: 'smooth' });
+
+            document.getElementById('trackingInput').value = '';
+        };
+
+        function backToSearch() {
+            document.getElementById('ricevutaWrap').style.display = 'none';
+            document.getElementById('searchCard').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('trackingInput').focus();
+        }
+
+        // === PRINT ===
+        document.querySelector('.r-print').addEventListener('click', function() {
+            window.print();
+        });
+    </script>
+</body>
+</html>
