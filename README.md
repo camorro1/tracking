@@ -1,23 +1,40 @@
-# NovaX - Advanced Multi-Vector Penetration Testing Framework
+# 🛡️ Camorro - Termux Penetration Testing Framework
 
-**Version:** 1.0  
-**Platform:** Termux / Linux  
-**Language:** Python 3
+![Version](https://img.shields.io/badge/version-1.0-red)
+![Platform](https://img.shields.io/badge/platform-Termux-blue)
+![Language](https://img.shields.io/badge/language-Python-yellow)
 
-## 📋 الوصف
-إطار عمل متكامل لاختبار الاختراق يجمع بين:
-- هجمات رفض الخدمة المتعددة (SYN Flood, HTTP Flood, Slowloris, DNS Amplification)
-- هجمات القوة العمياء (SSH, FTP, MySQL, WordPress)
-- فحص الثغرات (SQLi, XSS, LFI, RCE)
-- تجاوز الحماية (WAF Bypass, CDN Bypass, Rate Limit Bypass)
-- الفحص الشامل والمتعدد المراحل
+**Camorro** is a professional penetration testing framework designed specifically for **Termux** (Android terminal environment). It provides modular tools for payload generation, network scanning, exploitation, and session management.
 
-## 🚀 التثبيت على Termux
+> ⚠️ **AUTHORIZED USE ONLY**  
+> This tool is intended for authorized security testing, educational purposes, and CTF challenges only.  
+> Unauthorized use against systems you do not own or have explicit permission to test is illegal.
+
+---
+
+## 📋 Features
+
+| Module | Description |
+|--------|-------------|
+| **Payload Generator** | Generate APK, EXE, Python, PHP, PowerShell, and ELF reverse shells |
+| **Network Scanner** | LAN scanning, port scanning, service detection, OS fingerprinting |
+| **Exploitation Engine** | Metasploit integration, ADB exploitation, SSH/FTP brute force, auto-pwn |
+| **Session Manager** | Monitor active sessions, background listeners, payload management |
+
+---
+
+## 🚀 Installation
 
 ```bash
-pkg update -y && pkg upgrade -y
-pkg install -y git python
-git clone https://github.com/YOUR_USERNAME/NovaX.git
-cd NovaX
-bash install.sh
-python main.py
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/camorro.git
+cd camorro
+
+# Run the setup script
+chmod +x setup.sh
+./setup.sh
+
+# Or install dependencies manually
+pkg update && pkg upgrade
+pkg install python python3 nmap fping hydra adb
+pip install colorama requests
