@@ -1,0 +1,36 @@
+# DarkForge - Advanced PDF & Image Exploitation Framework
+# المتطلبات الأساسية
+
+# معالجة الصور
+Pillow>=9.0.0
+
+# PDF
+reportlab>=3.6.0
+fpdf2>=2.5.0
+pdfplumber>=0.7.0
+
+# التشفير
+pycryptodome>=3.15.0
+cryptography>=38.0.0
+
+# الشبكة
+requests>=2.28.0
+flask>=2.2.0
+flask-cors>=3.0.0
+
+# الأدوات
+colorama>=0.4.6
+tqdm>=4.64.0
+pyshark>=0.5.2
+
+# QR Code
+qrcode[pil]>=7.4.0
+
+# التحليل
+numpy>=1.23.0
+scipy>=1.8.0
+
+# متفرقات
+argparse>=1.4.0
+rich>=12.0.0
+pyyaml>=6.0
