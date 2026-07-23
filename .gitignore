@@ -1,0 +1,43 @@
+# DarkForge .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+
+# الإخراج
+output/
+*.pdf
+*.png
+*.exe
+*.ps1
+*.sh
+*.bin
+
+# الملفات المؤقتة
+temp/
+tmp/
+*.tmp
+*.log
+*.info
+*.pxl
+
+# البيئة
+.env
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# نظام
+.DS_Store
+Thumbs.db
