@@ -1,73 +1,57 @@
 #!/usr/bin/env python3
-"""
-مدير الجلسات
-- حفظ جلسات Instagram
-- استئناف الجلسات
-- إدارة cookies و tokens
-"""
+"""Camoro - Session Manager"""
 
 import json
-import os
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent.resolve()
-SESSIONS_DIR = BASE_DIR / 'sessions'
+SESSIONS_DIR = BASE_DIR / "sessions"
 SESSIONS_DIR.mkdir(exist_ok=True)
 
 
 class SessionManager:
-    """إدارة جلسات Instagram"""
-
     def __init__(self):
         self.sessions_dir = SESSIONS_DIR
 
     def save(self, username, session_id, csrf_token=None, cookies=None):
-        """حفظ جلسة"""
-        session_data = {
-            'username': username,
-            'session_id': session_id,
-            'csrf_token': csrf_token,
-            'cookies': cookies or {},
-            'created_at': datetime.now().isoformat(),
-            'last_used': datetime.now().isoformat(),
+        data = {
+            "username": username,
+            "session_id": session_id,
+            "csrf_token": csrf_token,
+            "cookies": cookies or {},
+            "created_at": datetime.now().isoformat(),
+            "last_used": datetime.now().isoformat(),
         }
-
-        filepath = self.sessions_dir / f"{username}.json"
-        with open(filepath, 'w') as f:
-            json.dump(session_data, f, indent=2)
-
-        return filepath
+        path = self.sessions_dir / f"{username}.json"
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        return path
 
     def load(self, username):
-        """تحميل جلسة"""
-        filepath = self.sessions_dir / f"{username}.json"
-        if not filepath.exists():
+        path = self.sessions_dir / f"{username}.json"
+        if not path.exists():
             return None
-
-        with open(filepath, 'r') as f:
-            session = json.load(f)
-
-        # تحديث وقت آخر استخدام
-        session['last_used'] = datetime.now().isoformat()
-        with open(filepath, 'w') as f:
-            json.dump(session, f, indent=2)
-
-        return session
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        data["last_used"] = datetime.now().isoformat()
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        return data
 
     def delete(self, username):
-        """حذف جلسة"""
-        filepath = self.sessions_dir / f"{username}.json"
-        if filepath.exists():
-            filepath.unlink()
+        path = self.sessions_dir / f"{username}.json"
+        if path.exists():
+            path.unlink()
             return True
         return False
 
     def list_all(self):
-        """عرض كل الجلسات"""
         sessions = []
-        for f in self.sessions_dir.glob('*.json'):
-            with open(f, 'r') as fp:
-                data = json.load(fp)
-                sessions.append(data)
-        return sorted(sessions, key=lambda x: x.get('last_used', ''), reverse=True)
+        for f in self.sessions_dir.glob("*.json"):
+            try:
+                with open(f, "r", encoding="utf-8") as fp:
+                    sessions.append(json.load(fp))
+            except Exception:
+                continue
+        return sorted(sessions, key=lambda x: x.get("last_used", ""), reverse=True)
