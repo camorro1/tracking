@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Camoro - Termux Installation Script
-# Instagram Security Assessment Tool
+# Camoro - Installer for Termux
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -11,37 +10,34 @@ NC='\033[0m'
 
 echo -e "${CYAN}"
 echo "╔══════════════════════════════════════════╗"
-echo "║         🔮 CAMORO INSTALLER              ║"
-echo "║   Instagram Security Assessment Tool      ║"
+echo "║         🔮 CAMORO INSTALLER v2           ║"
+echo "║     Instagram Security Assessment Tool    ║"
 echo "╚══════════════════════════════════════════╝"
 echo -e "${NC}"
 
-# Check if running on Termux
-if [ -d "/data/data/com.termux/files/usr" ]; then
-    echo -e "${GREEN}[✓] Termux detected${NC}"
-else
-    echo -e "${YELLOW}[!] Not Termux, but continuing...${NC}"
-fi
-
-echo -e "${CYAN}[*] Updating packages...${NC}"
+# تحديث الحزم
+echo -e "${YELLOW}[*] جاري تحديث الحزم...${NC}"
 pkg update -y && pkg upgrade -y
 
-echo -e "${CYAN}[*] Installing Python and dependencies...${NC}"
-pkg install -y python python-pip git curl wget
+# تثبيت Python والمكتبات
+echo -e "${YELLOW}[*] جاري تثبيت Python...${NC}"
+pkg install -y python python-pip git curl wget openssl
 
-echo -e "${CYAN}[*] Installing Python libraries...${NC}"
+# ترقية pip
+echo -e "${YELLOW}[*] جاري ترقية pip...${NC}"
 pip install --upgrade pip
-pip install -r requirements.txt
 
-echo -e "${CYAN}[*] Generating common passwords list...${NC}"
-python modules/utils.py --generate-wordlist
+# تثبيت المكتبات المطلوبة
+echo -e "${YELLOW}[*] جاري تثبيت المكتبات...${NC}"
+pip install httpx[http2] colorama
 
+# صلاحيات التنفيذ
 chmod +x camoro.sh
 
 echo -e "${GREEN}"
 echo "╔══════════════════════════════════════════╗"
 echo "║     ✅ CAMORO INSTALLED SUCCESSFULLY      ║"
 echo "║                                           ║"
-echo "║   Run: ./camoro.sh                      ║"
+echo "║   للتشغيل: ./camoro.sh                  ║"
 echo "╚══════════════════════════════════════════╝"
 echo -e "${NC}"
