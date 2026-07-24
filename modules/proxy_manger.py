@@ -58,7 +58,6 @@ class ProxyManager:
     def rotate_ip(self) -> Optional[str]:
         with self.lock:
             print("\n[*] جاري تغيير IP...")
-            # Tor NEWNYM
             try:
                 s = socket.socket()
                 s.settimeout(5)
@@ -82,7 +81,6 @@ class ProxyManager:
             except Exception:
                 pass
 
-            # Free proxies
             if not self.proxy_list:
                 self._scrape_proxies()
             if self.proxy_list:
