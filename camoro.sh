@@ -1,13 +1,25 @@
-#!/bin/bash
-# Camoro v5.0 Launcher
+# 🔮 Camoro v5.0 - AI-Powered Security Assessment Framework
 
-cd "$(dirname "$0")"
+**Camoro** is an advanced security assessment tool designed for authorized
+penetration testing and security research. It uses AI-powered password
+generation to simulate human-like password creation patterns.
 
-# تفعيل Tor إذا وجد
-if command -v tor &> /dev/null; then
-    tor &>/dev/null &
-    privoxy &>/dev/null 2>&1 &
-fi
+## ⚡ Features
 
-# تشغيل الأداة
-python3 camoro.py "$@"
+- 🔍 **Intelligence Gathering** - Extract comprehensive profile data
+- 🧠 **AI Password Generator** - 20,000+ smart passwords mimicking human behavior
+- ⚡ **Multi-threaded Attack Engine** - 5+ concurrent threads
+- 🔄 **IP Rotation** - Automatic IP change via Tor every N attempts
+- 🔑 **Session Manager** - Save and resume sessions
+- 📊 **Real-time Progress** - Live stats with speed and ETA
+- 🔁 **Resume Support** - Continue from where you left off
+
+## 📦 Installation
+
+### Termux
+```bash
+pkg update && pkg upgrade -y
+pkg install git python python-pip tor -y
+git clone https://github.com/YOUR_USERNAME/camoro.git
+cd camoro
+bash install.sh
